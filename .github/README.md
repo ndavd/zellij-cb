@@ -11,16 +11,19 @@ Custom compact bar plugin for [Zellij](https://zellij.dev/) based on [Zellij's d
 ## Features
 - Displays session directory name
 - Is super compact and minimal
-- Configurable theme
+- Configurable
 
 ## Available configuration
-- **SessionDirectoryColor** e.g. `blue`
-- **SessionNameColor** e.g. `blue`
-- **TabColor** e.g. `blue`
-- **ActiveTabColor** e.g. `blue`
-- **NormalModeColor** e.g. `blue`
-- **OtherModesColor** e.g. `blue`
-- **OthersColor** e.g. `blue`
+- Content
+  - **DefaultTabName** e.g. `TERM`
+- Colors
+  - **SessionDirectoryColor** e.g. `blue`
+  - **SessionNameColor** e.g. `blue`
+  - **TabColor** e.g. `blue`
+  - **ActiveTabColor** e.g. `blue`
+  - **NormalModeColor** e.g. `blue`
+  - **OtherModesColor** e.g. `blue`
+  - **OthersColor** e.g. `blue`
 
 ## Example usage
 Check out my [dotfiles](https://github.com/ndavd/dotfiles/tree/main/.config/zellij).

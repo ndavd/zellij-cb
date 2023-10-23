@@ -23,7 +23,7 @@ struct State {
     tabs: Vec<TabInfo>,
     active_tab_idx: usize,
     configuration: BTreeMap<String, String>,
-    configuration_colors: ConfigurationColors,
+    user_configuration: UserConfiguration,
     mode_info: ModeInfo,
     tab_line: Vec<LinePart>,
     session_directory: String,
@@ -32,19 +32,20 @@ struct State {
 register_plugin!(State);
 
 #[derive(Default, Clone, Debug)]
-pub struct ConfigurationColors {
-    fg: PaletteColor,
-    bg: PaletteColor,
-    session_directory: PaletteColor,
-    session_name: PaletteColor,
-    tab: PaletteColor,
-    active_tab: PaletteColor,
-    normal_mode: PaletteColor,
-    other_modes: PaletteColor,
-    others: PaletteColor,
+pub struct UserConfiguration {
+    color_fg: PaletteColor,
+    color_bg: PaletteColor,
+    color_session_directory: PaletteColor,
+    color_session_name: PaletteColor,
+    color_tab: PaletteColor,
+    color_active_tab: PaletteColor,
+    color_normal_mode: PaletteColor,
+    color_other_modes: PaletteColor,
+    color_others: PaletteColor,
+    default_tab_name: String,
 }
 
-impl ConfigurationColors {
+impl UserConfiguration {
     fn str_to_color(str: &String, colors: &Palette) -> Option<PaletteColor> {
         match str.as_str() {
             "fg" => Some(colors.fg),
@@ -72,65 +73,91 @@ impl ConfigurationColors {
     }
     fn get_color_from_configuration(
         configuration: &BTreeMap<String, String>,
-        query: &str,
+        color_query: &str,
         fallback_color: PaletteColor,
         colors: &Palette,
     ) -> PaletteColor {
-        if let Some(color_string) = configuration.get(query) {
+        if let Some(color_string) = configuration.get(color_query) {
             if let Some(color) = Self::str_to_color(color_string, colors) {
                 return color;
             }
         }
         fallback_color
     }
+    fn get_string_from_configuration(
+        configuration: &BTreeMap<String, String>,
+        query: &str,
+        fallback: &str,
+    ) -> String {
+        match configuration.get(query) {
+            Some(value) => value,
+            None => fallback,
+        }
+        .to_string()
+    }
     pub fn populate_from_configuration(
         configuration: &BTreeMap<String, String>,
         colors: &Palette,
     ) -> Self {
         Self {
-            fg: Self::get_color_from_configuration(&configuration, "FgColor", colors.white, colors),
-            bg: Self::get_color_from_configuration(&configuration, "BgColor", colors.black, colors),
-            session_directory: Self::get_color_from_configuration(
+            color_fg: Self::get_color_from_configuration(
+                &configuration,
+                "FgColor",
+                colors.white,
+                colors,
+            ),
+            color_bg: Self::get_color_from_configuration(
+                &configuration,
+                "BgColor",
+                colors.black,
+                colors,
+            ),
+            color_session_directory: Self::get_color_from_configuration(
                 &configuration,
                 "SessionDirectoryColor",
                 colors.white,
                 colors,
             ),
-            session_name: Self::get_color_from_configuration(
+            color_session_name: Self::get_color_from_configuration(
                 &configuration,
                 "SessionNameColor",
                 colors.gray,
                 colors,
             ),
-            tab: Self::get_color_from_configuration(
+            color_tab: Self::get_color_from_configuration(
                 &configuration,
                 "TabColor",
                 colors.gray,
                 colors,
             ),
-            active_tab: Self::get_color_from_configuration(
+            color_active_tab: Self::get_color_from_configuration(
                 &configuration,
                 "ActiveTabColor",
                 colors.green,
                 colors,
             ),
-            normal_mode: Self::get_color_from_configuration(
+            color_normal_mode: Self::get_color_from_configuration(
                 &configuration,
                 "NormalModeColor",
                 colors.gold,
                 colors,
             ),
-            other_modes: Self::get_color_from_configuration(
+            color_other_modes: Self::get_color_from_configuration(
                 &configuration,
                 "OtherModesColor",
                 colors.orange,
                 colors,
             ),
-            others: Self::get_color_from_configuration(
+            color_others: Self::get_color_from_configuration(
                 &configuration,
                 "OthersColor",
                 colors.orange,
                 colors,
+            ),
+            default_tab_name: Self::get_string_from_configuration(
+                &configuration,
+                "DefaultTabName",
+                "tab",
             ),
         }
     }
@@ -180,7 +207,7 @@ impl ZellijPlugin for State {
                 should_render = true;
             }
             Event::ModeUpdate(mode_info) => {
-                self.configuration_colors = ConfigurationColors::populate_from_configuration(
+                self.user_configuration = UserConfiguration::populate_from_configuration(
                     &self.configuration,
                     &mode_info.style.colors,
                 );
@@ -236,7 +263,7 @@ impl ZellijPlugin for State {
             } else if t.active {
                 active_tab_index = t.position;
             }
-            let tab = tab_style(tabname, t, self.configuration_colors.clone());
+            let tab = tab_style(tabname, t, self.user_configuration.clone());
             is_alternate_tab = !is_alternate_tab;
             all_tabs.push(tab);
         }
@@ -245,7 +272,7 @@ impl ZellijPlugin for State {
             all_tabs,
             active_tab_index,
             cols.saturating_sub(1),
-            self.configuration_colors.clone(),
+            self.user_configuration.clone(),
             self.mode_info.style.hide_session_name,
             self.mode_info.mode,
             self.session_directory.clone(),
@@ -254,7 +281,7 @@ impl ZellijPlugin for State {
             .tab_line
             .iter()
             .fold(String::new(), |output, part| output + &part.part);
-        let background = self.configuration_colors.bg;
+        let background = self.user_configuration.color_bg;
         match background {
             PaletteColor::Rgb((r, g, b)) => {
                 print!("{}\u{1b}[48;2;{};{};{}m\u{1b}[0K", output, r, g, b);

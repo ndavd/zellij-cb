@@ -1,19 +1,19 @@
-use crate::ConfigurationColors;
 use crate::LinePart;
+use crate::UserConfiguration;
 use zellij_tile::prelude::*;
 use zellij_tile_utils::style;
 
-pub fn render_tab(text: String, tab: &TabInfo, colors: ConfigurationColors) -> LinePart {
-    let background_color = colors.bg;
+pub fn render_tab(text: String, tab: &TabInfo, user_conf: UserConfiguration) -> LinePart {
+    let background_color = user_conf.color_bg;
     let foreground_color = if tab.active {
-        colors.active_tab
+        user_conf.color_active_tab
     } else {
-        colors.tab
+        user_conf.color_tab
     };
 
     let tab_index = tab.position + 1;
     let text = if text == format!("Tab #{tab_index}") {
-        "tab".to_string()
+        user_conf.default_tab_name
     } else {
         text
     };
@@ -37,12 +37,12 @@ pub fn render_tab(text: String, tab: &TabInfo, colors: ConfigurationColors) -> L
     }
 }
 
-pub fn tab_style(mut tabname: String, tab: &TabInfo, colors: ConfigurationColors) -> LinePart {
+pub fn tab_style(mut tabname: String, tab: &TabInfo, user_conf: UserConfiguration) -> LinePart {
     if tab.is_sync_panes_active {
         tabname.push_str(" (Sync)");
     }
 
-    render_tab(tabname, tab, colors)
+    render_tab(tabname, tab, user_conf)
 }
 
 pub(crate) fn get_tab_to_focus(

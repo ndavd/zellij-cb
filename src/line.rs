@@ -1,7 +1,7 @@
 use unicode_width::UnicodeWidthStr;
 
-use crate::ConfigurationColors;
 use crate::LinePart;
+use crate::UserConfiguration;
 use zellij_tile::prelude::*;
 use zellij_tile_utils::style;
 
@@ -16,7 +16,7 @@ fn populate_tabs_in_tab_line(
     tabs_after_active: &mut Vec<LinePart>,
     tabs_to_render: &mut Vec<LinePart>,
     cols: usize,
-    colors: ConfigurationColors,
+    user_conf: UserConfiguration,
 ) {
     let mut middle_size = get_current_title_len(tabs_to_render);
 
@@ -28,10 +28,11 @@ fn populate_tabs_in_tab_line(
 
         // left_more_tab_index is the tab to the left of the leftmost visible tab
         let left_more_tab_index = left_count.saturating_sub(1);
-        let collapsed_left = left_more_message(left_count, colors.clone(), left_more_tab_index);
+        let collapsed_left = left_more_message(left_count, user_conf.clone(), left_more_tab_index);
         // right_more_tab_index is the tab to the right of the rightmost visible tab
         let right_more_tab_index = left_count + tabs_to_render.len();
-        let collapsed_right = right_more_message(right_count, colors.clone(), right_more_tab_index);
+        let collapsed_right =
+            right_more_message(right_count, user_conf.clone(), right_more_tab_index);
 
         let total_size = collapsed_left.len + middle_size + collapsed_right.len;
 
@@ -96,7 +97,7 @@ fn populate_tabs_in_tab_line(
 
 fn left_more_message(
     tab_count_to_the_left: usize,
-    colors: ConfigurationColors,
+    user_conf: UserConfiguration,
     tab_index: usize,
 ) -> LinePart {
     if tab_count_to_the_left == 0 {
@@ -108,7 +109,9 @@ fn left_more_message(
         " ← +many ".to_string()
     };
     let more_text_len = more_text.len();
-    let more_styled_text = style!(colors.fg, colors.others).bold().paint(more_text);
+    let more_styled_text = style!(user_conf.color_fg, user_conf.color_others)
+        .bold()
+        .paint(more_text);
     LinePart {
         part: more_styled_text.to_string(),
         len: more_text_len,
@@ -118,7 +121,7 @@ fn left_more_message(
 
 fn right_more_message(
     tab_count_to_the_right: usize,
-    colors: ConfigurationColors,
+    user_conf: UserConfiguration,
     tab_index: usize,
 ) -> LinePart {
     if tab_count_to_the_right == 0 {
@@ -130,7 +133,9 @@ fn right_more_message(
         " +many → ".to_string()
     };
     let more_text_len = more_text.len();
-    let more_styled_text = style!(colors.fg, colors.others).bold().paint(more_text);
+    let more_styled_text = style!(user_conf.color_fg, user_conf.color_others)
+        .bold()
+        .paint(more_text);
     LinePart {
         part: more_styled_text.to_string(),
         len: more_text_len,
@@ -141,17 +146,17 @@ fn right_more_message(
 fn tab_line_prefix(
     session_name: Option<&str>,
     mode: InputMode,
-    colors: ConfigurationColors,
+    user_conf: UserConfiguration,
     cols: usize,
     session_directory: String,
 ) -> Vec<LinePart> {
     let prefix_text = format!(" {session_directory}");
     let prefix_text_len = prefix_text.chars().count();
-    let text_color = colors.session_directory;
-    let bg_color = colors.bg;
+    let text_color = user_conf.color_session_directory;
+    let bg_color = user_conf.color_bg;
 
-    let normal_mode_color = colors.normal_mode;
-    let other_modes_color = colors.other_modes;
+    let normal_mode_color = user_conf.color_normal_mode;
+    let other_modes_color = user_conf.color_other_modes;
 
     let prefix_styled_text = style!(text_color, bg_color).bold().paint(prefix_text);
     let mut parts = vec![LinePart {
@@ -162,7 +167,7 @@ fn tab_line_prefix(
     if let Some(name) = session_name {
         let name_part = format!("-{} ", name);
         let name_part_len = name_part.width();
-        let text_color = colors.session_name;
+        let text_color = user_conf.color_session_name;
         let name_part_styled_text = style!(text_color, bg_color)
             .bold()
             .italic()
@@ -211,7 +216,7 @@ pub fn tab_line(
     mut all_tabs: Vec<LinePart>,
     active_tab_index: usize,
     cols: usize,
-    colors: ConfigurationColors,
+    colors: UserConfiguration,
     hide_session_name: bool,
     mode: InputMode,
     session_directory: String,
