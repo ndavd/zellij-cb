@@ -1,6 +1,6 @@
 use unicode_width::UnicodeWidthStr;
 
-use crate::ConfigurationColor;
+use crate::ConfigurationColors;
 use crate::LinePart;
 use zellij_tile::prelude::*;
 use zellij_tile_utils::style;
@@ -16,7 +16,7 @@ fn populate_tabs_in_tab_line(
     tabs_after_active: &mut Vec<LinePart>,
     tabs_to_render: &mut Vec<LinePart>,
     cols: usize,
-    palette: Palette,
+    colors: ConfigurationColors,
 ) {
     let mut middle_size = get_current_title_len(tabs_to_render);
 
@@ -28,10 +28,10 @@ fn populate_tabs_in_tab_line(
 
         // left_more_tab_index is the tab to the left of the leftmost visible tab
         let left_more_tab_index = left_count.saturating_sub(1);
-        let collapsed_left = left_more_message(left_count, palette, left_more_tab_index);
+        let collapsed_left = left_more_message(left_count, colors.clone(), left_more_tab_index);
         // right_more_tab_index is the tab to the right of the rightmost visible tab
         let right_more_tab_index = left_count + tabs_to_render.len();
-        let collapsed_right = right_more_message(right_count, palette, right_more_tab_index);
+        let collapsed_right = right_more_message(right_count, colors.clone(), right_more_tab_index);
 
         let total_size = collapsed_left.len + middle_size + collapsed_right.len;
 
@@ -94,7 +94,11 @@ fn populate_tabs_in_tab_line(
     }
 }
 
-fn left_more_message(tab_count_to_the_left: usize, palette: Palette, tab_index: usize) -> LinePart {
+fn left_more_message(
+    tab_count_to_the_left: usize,
+    colors: ConfigurationColors,
+    tab_index: usize,
+) -> LinePart {
     if tab_count_to_the_left == 0 {
         return LinePart::default();
     }
@@ -104,11 +108,7 @@ fn left_more_message(tab_count_to_the_left: usize, palette: Palette, tab_index: 
         " ← +many ".to_string()
     };
     let more_text_len = more_text.len();
-    let (text_color, _) = match palette.theme_hue {
-        ThemeHue::Dark => (palette.white, palette.black),
-        ThemeHue::Light => (palette.black, palette.white),
-    };
-    let more_styled_text = style!(text_color, palette.orange).bold().paint(more_text);
+    let more_styled_text = style!(colors.fg, colors.others).bold().paint(more_text);
     LinePart {
         part: more_styled_text.to_string(),
         len: more_text_len,
@@ -118,7 +118,7 @@ fn left_more_message(tab_count_to_the_left: usize, palette: Palette, tab_index: 
 
 fn right_more_message(
     tab_count_to_the_right: usize,
-    palette: Palette,
+    colors: ConfigurationColors,
     tab_index: usize,
 ) -> LinePart {
     if tab_count_to_the_right == 0 {
@@ -130,11 +130,7 @@ fn right_more_message(
         " +many → ".to_string()
     };
     let more_text_len = more_text.len();
-    let (text_color, _) = match palette.theme_hue {
-        ThemeHue::Dark => (palette.white, palette.black),
-        ThemeHue::Light => (palette.black, palette.white),
-    };
-    let more_styled_text = style!(text_color, palette.orange).bold().paint(more_text);
+    let more_styled_text = style!(colors.fg, colors.others).bold().paint(more_text);
     LinePart {
         part: more_styled_text.to_string(),
         len: more_text_len,
@@ -145,17 +141,17 @@ fn right_more_message(
 fn tab_line_prefix(
     session_name: Option<&str>,
     mode: InputMode,
-    palette: Palette,
+    colors: ConfigurationColors,
     cols: usize,
     session_directory: String,
 ) -> Vec<LinePart> {
     let prefix_text = format!(" {session_directory}");
     let prefix_text_len = prefix_text.chars().count();
-    let text_color = ConfigurationColor::SessionDirectory.color(&palette);
-    let bg_color = ConfigurationColor::Bg.color(&palette);
+    let text_color = colors.session_directory;
+    let bg_color = colors.bg;
 
-    let normal_mode_color = ConfigurationColor::NormalMode.color(&palette);
-    let other_modes_color = ConfigurationColor::OtherModes.color(&palette);
+    let normal_mode_color = colors.normal_mode;
+    let other_modes_color = colors.other_modes;
 
     let prefix_styled_text = style!(text_color, bg_color).bold().paint(prefix_text);
     let mut parts = vec![LinePart {
@@ -166,7 +162,7 @@ fn tab_line_prefix(
     if let Some(name) = session_name {
         let name_part = format!("-{} ", name);
         let name_part_len = name_part.width();
-        let text_color = ConfigurationColor::SessionName.color(&palette);
+        let text_color = colors.session_name;
         let name_part_styled_text = style!(text_color, bg_color)
             .bold()
             .italic()
@@ -215,7 +211,7 @@ pub fn tab_line(
     mut all_tabs: Vec<LinePart>,
     active_tab_index: usize,
     cols: usize,
-    palette: Palette,
+    colors: ConfigurationColors,
     hide_session_name: bool,
     mode: InputMode,
     session_directory: String,
@@ -228,8 +224,8 @@ pub fn tab_line(
         tabs_before_active.pop().unwrap()
     };
     let mut prefix = match hide_session_name {
-        true => tab_line_prefix(None, mode, palette, cols, session_directory),
-        false => tab_line_prefix(session_name, mode, palette, cols, session_directory),
+        true => tab_line_prefix(None, mode, colors.clone(), cols, session_directory),
+        false => tab_line_prefix(session_name, mode, colors.clone(), cols, session_directory),
     };
     let prefix_len = get_current_title_len(&prefix);
 
@@ -245,7 +241,7 @@ pub fn tab_line(
         &mut tabs_after_active,
         &mut tabs_to_render,
         cols.saturating_sub(prefix_len),
-        palette,
+        colors,
     );
     prefix.append(&mut tabs_to_render);
 
