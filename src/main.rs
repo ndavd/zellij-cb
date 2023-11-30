@@ -42,6 +42,7 @@ pub struct UserConfiguration {
     color_normal_mode: PaletteColor,
     color_other_modes: PaletteColor,
     color_others: PaletteColor,
+    display_session_directory: bool,
     default_tab_name: String,
 }
 
@@ -94,6 +95,16 @@ impl UserConfiguration {
             None => fallback,
         }
         .to_string()
+    }
+    fn get_bool_from_configuration(
+        configuration: &BTreeMap<String, String>,
+        query: &str,
+        fallback: bool,
+    ) -> bool {
+        match configuration.get(query) {
+            Some(value) => value.parse().unwrap_or(fallback),
+            None => fallback,
+        }
     }
     pub fn populate_from_configuration(
         configuration: &BTreeMap<String, String>,
@@ -158,6 +169,11 @@ impl UserConfiguration {
                 &configuration,
                 "DefaultTabName",
                 "tab",
+            ),
+            display_session_directory: Self::get_bool_from_configuration(
+                &configuration,
+                "DisplaySessionDirectory",
+                true,
             ),
         }
     }
@@ -268,12 +284,11 @@ impl ZellijPlugin for State {
             all_tabs.push(tab);
         }
         self.tab_line = tab_line(
-            self.mode_info.session_name.as_deref(),
+            self.mode_info.session_name.clone().unwrap(),
             all_tabs,
             active_tab_index,
             cols.saturating_sub(1),
             self.user_configuration.clone(),
-            self.mode_info.style.hide_session_name,
             self.mode_info.mode,
             self.session_directory.clone(),
         );

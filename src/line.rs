@@ -144,41 +144,78 @@ fn right_more_message(
 }
 
 fn tab_line_prefix(
-    session_name: Option<&str>,
+    session_name: String,
     mode: InputMode,
     user_conf: UserConfiguration,
     cols: usize,
     session_directory: String,
 ) -> Vec<LinePart> {
-    let prefix_text = format!(" {session_directory}");
-    let prefix_text_len = prefix_text.chars().count();
-    let text_color = user_conf.color_session_directory;
-    let bg_color = user_conf.color_bg;
+    let mut parts: Vec<LinePart> = vec![LinePart {
+        part: " ".to_string(),
+        len: 1,
+        tab_index: None,
+    }];
 
+    let bg_color = user_conf.color_bg;
     let normal_mode_color = user_conf.color_normal_mode;
     let other_modes_color = user_conf.color_other_modes;
 
-    let prefix_styled_text = style!(text_color, bg_color).bold().paint(prefix_text);
-    let mut parts = vec![LinePart {
-        part: prefix_styled_text.to_string(),
-        len: prefix_text_len,
-        tab_index: None,
-    }];
-    if let Some(name) = session_name {
-        let name_part = format!("-{} ", name);
-        let name_part_len = name_part.width();
-        let text_color = user_conf.color_session_name;
-        let name_part_styled_text = style!(text_color, bg_color)
-            .bold()
-            .italic()
-            .paint(name_part);
-        if cols.saturating_sub(prefix_text_len) >= name_part_len {
-            parts.push(LinePart {
-                part: name_part_styled_text.to_string(),
-                len: name_part_len,
-                tab_index: None,
-            })
+    let session_name_separator = "-";
+    let session_name_parts = session_name
+        .split(session_name_separator)
+        .collect::<Vec<_>>();
+    let session_name_parts_len = session_name_parts.len();
+    let mut prefix_text_len = 0;
+
+    let has_prefix = user_conf.display_session_directory || session_name_parts_len > 2;
+
+    if has_prefix {
+        let prefix_text = if user_conf.display_session_directory {
+            session_directory
+        } else {
+            session_name_parts[..session_name_parts_len - 2].join(session_name_separator)
+        };
+        prefix_text_len = prefix_text.chars().count();
+        let text_color = user_conf.color_session_directory;
+
+        let prefix_styled_text = style!(text_color, bg_color).bold().paint(prefix_text);
+        parts.push(LinePart {
+            part: prefix_styled_text.to_string(),
+            len: prefix_text_len,
+            tab_index: None,
+        });
+    }
+
+    let name_part = format!(
+        "{}{} ",
+        if has_prefix {
+            session_name_separator
+        } else {
+            ""
+        },
+        if user_conf.display_session_directory {
+            session_name
+        } else {
+            if session_name_parts_len == 1 {
+                session_name
+            } else {
+                session_name_parts[session_name_parts_len - 2..session_name_parts_len]
+                    .join(session_name_separator)
+            }
         }
+    );
+    let name_part_len = name_part.width();
+    let text_color = user_conf.color_session_name;
+    let name_part_styled_text = style!(text_color, bg_color)
+        .bold()
+        .italic()
+        .paint(name_part);
+    if cols.saturating_sub(prefix_text_len) >= name_part_len {
+        parts.push(LinePart {
+            part: name_part_styled_text.to_string(),
+            len: name_part_len,
+            tab_index: None,
+        })
     }
 
     let mode_part = match mode {
@@ -212,12 +249,11 @@ fn tab_line_prefix(
 }
 
 pub fn tab_line(
-    session_name: Option<&str>,
+    session_name: String,
     mut all_tabs: Vec<LinePart>,
     active_tab_index: usize,
     cols: usize,
-    colors: UserConfiguration,
-    hide_session_name: bool,
+    user_conf: UserConfiguration,
     mode: InputMode,
     session_directory: String,
 ) -> Vec<LinePart> {
@@ -228,10 +264,13 @@ pub fn tab_line(
     } else {
         tabs_before_active.pop().unwrap()
     };
-    let mut prefix = match hide_session_name {
-        true => tab_line_prefix(None, mode, colors.clone(), cols, session_directory),
-        false => tab_line_prefix(session_name, mode, colors.clone(), cols, session_directory),
-    };
+    let mut prefix = tab_line_prefix(
+        session_name,
+        mode,
+        user_conf.clone(),
+        cols,
+        session_directory,
+    );
     let prefix_len = get_current_title_len(&prefix);
 
     // if active tab alone won't fit in cols, don't draw any tabs
@@ -246,7 +285,7 @@ pub fn tab_line(
         &mut tabs_after_active,
         &mut tabs_to_render,
         cols.saturating_sub(prefix_len),
-        colors,
+        user_conf,
     );
     prefix.append(&mut tabs_to_render);
 
