@@ -3628,7 +3628,7 @@ dependencies = [
 
 [[package]]
 name = "zellij-tile"
-version = "0.40.0"
+version = "0.41.0"
 dependencies = [
  "clap",
  "serde",
@@ -3640,14 +3640,14 @@ dependencies = [
 
 [[package]]
 name = "zellij-tile-utils"
-version = "0.40.0"
+version = "0.41.0"
 dependencies = [
  "ansi_term",
 ]
 
 [[package]]
 name = "zellij-utils"
-version = "0.40.0"
+version = "0.41.0"
 dependencies = [
  "anyhow",
  "async-channel",
