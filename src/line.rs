@@ -150,11 +150,7 @@ fn tab_line_prefix(
     cols: usize,
     session_directory: String,
 ) -> Vec<LinePart> {
-    let mut parts: Vec<LinePart> = vec![LinePart {
-        part: " ".to_string(),
-        len: 1,
-        tab_index: None,
-    }];
+    let mut parts: Vec<LinePart> = Vec::new();
 
     let bg_color = user_conf.color_bg;
     let normal_mode_color = user_conf.color_normal_mode;
