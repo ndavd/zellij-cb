@@ -10,6 +10,13 @@ Custom compact bar plugin for [Zellij](https://zellij.dev/) based on
   <code>{session directory}-{session name} {mode in 1 letter} {...tabs}</code>
 </div>
 
+## Installation
+
+To build it just run `make` and you'll find the binary in
+`target/wasm32-wasip1/release/zellij-cb.wasm`. To load it into Zellij please
+refer to their
+[plugin loading documentation](https://zellij.dev/documentation/plugin-loading).
+
 ## Features
 
 - Displays session directory name

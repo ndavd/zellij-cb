@@ -1,10 +1,9 @@
 CC=cargo b
 
-default: wasm32-wasi
+default: release
 
-wasm32-wasi: FORCE
-	$(CC) --release \
-		--target wasm32-wasi
+release: FORCE
+	$(CC) --release
 
 clean: FORCE
 	-rm -r target
