@@ -214,21 +214,8 @@ fn tab_line_prefix(
         })
     }
 
-    let mode_part = match mode {
-        InputMode::Locked => " ".to_string(),
-        _ => {
-            let mode_string = format!("{:?}", mode);
-            format!(
-                "{} ",
-                mode_string
-                    .chars()
-                    .next()
-                    .unwrap()
-                    .to_uppercase()
-                    .collect::<String>()
-            )
-        }
-    };
+    let mut mode_part = user_conf.mode_display.get(&mode).unwrap().to_owned();
+    mode_part.push(' ');
     let mode_part_len = mode_part.width();
     let mode_part_styled_text = match mode {
         InputMode::Normal => style!(normal_mode_color, bg_color).bold().paint(mode_part),

@@ -2,7 +2,7 @@ mod line;
 mod tab;
 
 use std::cmp::{max, min};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::convert::TryInto;
 
 use tab::get_tab_to_focus;
@@ -44,6 +44,7 @@ pub struct UserConfiguration {
     color_others: PaletteColor,
     display_session_directory: bool,
     default_tab_name: String,
+    mode_display: HashMap<InputMode, String>,
 }
 
 impl UserConfiguration {
@@ -110,7 +111,43 @@ impl UserConfiguration {
         configuration: &BTreeMap<String, String>,
         colors: &Palette,
     ) -> Self {
+        let mode_display: HashMap<InputMode, String> = [
+            InputMode::Normal,
+            InputMode::Locked,
+            InputMode::Resize,
+            InputMode::Pane,
+            InputMode::Tab,
+            InputMode::Scroll,
+            InputMode::EnterSearch,
+            InputMode::Search,
+            InputMode::RenameTab,
+            InputMode::RenamePane,
+            InputMode::Session,
+            InputMode::Move,
+            InputMode::Prompt,
+            InputMode::Tmux,
+        ]
+        .iter()
+        .cloned()
+        .map(|mode| {
+            let mode_string = format!("{:?}", mode);
+            let fallback = if mode == InputMode::Locked {
+                String::new()
+            } else {
+                mode_string.chars().next().unwrap().to_uppercase().collect()
+            };
+            (
+                mode,
+                Self::get_string_from_configuration(
+                    &configuration,
+                    format!("{mode_string}ModeLabel").as_str(),
+                    &fallback,
+                ),
+            )
+        })
+        .collect();
         Self {
+            mode_display,
             color_fg: Self::get_color_from_configuration(
                 &configuration,
                 "FgColor",
