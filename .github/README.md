@@ -10,6 +10,12 @@ Custom compact bar plugin for [Zellij](https://zellij.dev/) based on
   <code>{session directory}-{session name} {mode in 1 letter} {...tabs}</code>
 </div>
 
+## Features
+
+- Displays session directory name
+- Is super compact and minimal
+- Configurable
+
 ## Installation
 
 To build it just run `make` and you'll find the binary in
@@ -17,11 +23,10 @@ To build it just run `make` and you'll find the binary in
 refer to their
 [plugin loading documentation](https://zellij.dev/documentation/plugin-loading).
 
-## Features
+## Example usage
 
-- Displays session directory name
-- Is super compact and minimal
-- Configurable
+Check out my
+[dotfiles](https://github.com/ndavd/dotfiles/tree/main/.config/zellij).
 
 ## Available configuration
 
@@ -38,8 +43,3 @@ refer to their
 | **NormalModeColor**         |  `color`  | Default: `gold`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | **OtherModesColor**         |  `color`  | Default: `orange`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | **OthersColor**             |  `color`  | Default: `orange`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-
-## Example usage
-
-Check out my
-[dotfiles](https://github.com/ndavd/dotfiles/tree/main/.config/zellij).
