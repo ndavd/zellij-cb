@@ -48,39 +48,27 @@ pub struct UserConfiguration {
 }
 
 impl UserConfiguration {
-    fn str_to_color(str: &String, colors: &Palette) -> Option<PaletteColor> {
-        match str.as_str() {
-            "fg" => Some(colors.fg),
-            "bg" => Some(colors.bg),
-            "black" => Some(colors.black),
-            "red" => Some(colors.red),
-            "green" => Some(colors.green),
-            "yellow" => Some(colors.yellow),
-            "blue" => Some(colors.blue),
-            "magenta" => Some(colors.magenta),
-            "cyan" => Some(colors.cyan),
-            "white" => Some(colors.white),
-            "orange" => Some(colors.orange),
-            "gray" => Some(colors.gray),
-            "purple" => Some(colors.purple),
-            "gold" => Some(colors.gold),
-            "silver" => Some(colors.silver),
-            "pink" => Some(colors.pink),
-            "brown" => Some(colors.brown),
+    fn str_to_palette_color(color_str: &str) -> Option<PaletteColor> {
+        let color_parts = color_str
+            .split(",")
+            .filter_map(|part| part.parse::<u8>().ok())
+            .collect::<Vec<_>>();
+        Some(match color_parts.len() {
+            1 => PaletteColor::EightBit(color_parts[0]),
+            3 => PaletteColor::Rgb((color_parts[0], color_parts[1], color_parts[2])),
             _ => {
-                eprintln!("Failed reading color configuration: Invalid color");
-                None
+                eprintln!("{color_str} is not a valid color");
+                return None;
             }
-        }
+        })
     }
     fn get_color_from_configuration(
         configuration: &BTreeMap<String, String>,
         color_query: &str,
         fallback_color: PaletteColor,
-        colors: &Palette,
     ) -> PaletteColor {
         if let Some(color_string) = configuration.get(color_query) {
-            if let Some(color) = Self::str_to_color(color_string, colors) {
+            if let Some(color) = Self::str_to_palette_color(color_string) {
                 return color;
             }
         }
@@ -109,7 +97,7 @@ impl UserConfiguration {
     }
     pub fn populate_from_configuration(
         configuration: &BTreeMap<String, String>,
-        colors: &Palette,
+        colors: &Styling,
     ) -> Self {
         let mode_display: HashMap<InputMode, String> = [
             InputMode::Normal,
@@ -146,62 +134,45 @@ impl UserConfiguration {
             )
         })
         .collect();
+
+        let white = colors.text_selected.base;
+        let black = colors.text_unselected.background;
+        let gray = colors.text_selected.background;
+        let green = colors.text_selected.emphasis_2;
+        let gold = colors.exit_code_error.emphasis_1;
+        let orange = colors.text_selected.emphasis_0;
+
         Self {
             mode_display,
-            color_fg: Self::get_color_from_configuration(
-                &configuration,
-                "FgColor",
-                colors.white,
-                colors,
-            ),
-            color_bg: Self::get_color_from_configuration(
-                &configuration,
-                "BgColor",
-                colors.black,
-                colors,
-            ),
+            color_fg: Self::get_color_from_configuration(&configuration, "FgColor", white),
+            color_bg: Self::get_color_from_configuration(&configuration, "BgColor", black),
             color_session_directory: Self::get_color_from_configuration(
                 &configuration,
                 "SessionDirectoryColor",
-                colors.white,
-                colors,
+                white,
             ),
             color_session_name: Self::get_color_from_configuration(
                 &configuration,
                 "SessionNameColor",
-                colors.gray,
-                colors,
+                gray,
             ),
-            color_tab: Self::get_color_from_configuration(
-                &configuration,
-                "TabColor",
-                colors.gray,
-                colors,
-            ),
+            color_tab: Self::get_color_from_configuration(&configuration, "TabColor", gray),
             color_active_tab: Self::get_color_from_configuration(
                 &configuration,
                 "ActiveTabColor",
-                colors.green,
-                colors,
+                green,
             ),
             color_normal_mode: Self::get_color_from_configuration(
                 &configuration,
                 "NormalModeColor",
-                colors.gold,
-                colors,
+                gold,
             ),
             color_other_modes: Self::get_color_from_configuration(
                 &configuration,
                 "OtherModesColor",
-                colors.orange,
-                colors,
+                orange,
             ),
-            color_others: Self::get_color_from_configuration(
-                &configuration,
-                "OthersColor",
-                colors.orange,
-                colors,
-            ),
+            color_others: Self::get_color_from_configuration(&configuration, "OthersColor", orange),
             default_tab_name: Self::get_string_from_configuration(
                 &configuration,
                 "DefaultTabName",
