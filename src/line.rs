@@ -189,15 +189,11 @@ fn tab_line_prefix(
         } else {
             ""
         },
-        if user_conf.display_session_directory {
+        if user_conf.display_session_directory || session_name_parts_len == 1 {
             session_name
         } else {
-            if session_name_parts_len == 1 {
-                session_name
-            } else {
-                session_name_parts[session_name_parts_len - 2..session_name_parts_len]
-                    .join(session_name_separator)
-            }
+            session_name_parts[session_name_parts_len - 2..session_name_parts_len]
+                .join(session_name_separator)
         }
     );
     let name_part_len = name_part.width();
