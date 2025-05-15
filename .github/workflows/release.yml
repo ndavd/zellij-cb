@@ -1,0 +1,54 @@
+---
+name: Release
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  build-release:
+    name: build-release
+    runs-on: ubuntu-latest
+    env:
+      RUST_BACKTRACE: 1
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
+        with:
+          fetch-tags: false  # https://github.com/actions/checkout/issues/1467
+
+      - run: git fetch --tags --all --force && git pull origin ${{ github.ref }}  --unshallow --force
+        name: Fetch tags manually as a workaround. See https://github.com/actions/checkout/issues/1467
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@b3b07ba8b418998c39fb20f53e8b695cdcc8de1b   # stable
+        with:
+          profile: minimal
+          override: true
+          toolchain: '1.87.0'
+          target: wasm32-wasip1
+
+      - name: Build release binary
+        run: cargo build --release
+
+      - name: Generate a changelog
+        uses: orhun/git-cliff-action@4a4a951bc43fafe41cd2348d181853f52356bee7  # v3
+        id: git-cliff
+        with:
+          config: cliff.toml
+          args: -vv --latest --strip header
+        env:
+          OUTPUT: CHANGES.md
+
+      - name: Create release
+        uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631 # v2.2.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          draft: true
+          body: ${{ steps.git-cliff.outputs.content }}
+          prerelease: false
+          files: |
+            ./target/wasm32-wasip1/release/zellij-cb.wasm
+
