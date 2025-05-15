@@ -13,7 +13,7 @@ pub fn render_tab(text: String, tab: &TabInfo, user_conf: UserConfiguration) -> 
 
     let tab_index = tab.position + 1;
     let text = if text == format!("Tab #{tab_index}") {
-        user_conf.default_tab_name
+        user_conf.default_tab_name.clone()
     } else {
         text
     };
