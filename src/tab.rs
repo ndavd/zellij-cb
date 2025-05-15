@@ -13,10 +13,19 @@ pub fn render_tab(text: String, tab: &TabInfo, user_conf: UserConfiguration) -> 
 
     let tab_index = tab.position + 1;
     let text = if text == format!("Tab #{tab_index}") {
-        user_conf.default_tab_name
+        user_conf.default_tab_name.clone()
     } else {
         text
     };
+    // Tab index is not necessarily tab position
+    let text = text
+        .split_once("Tab #")
+        .and_then(|(_, raw_index)| {
+            let tab_name_index = raw_index.parse::<u32>().ok()?;
+            (text == format!("Tab #{tab_name_index}")).then_some(user_conf.default_tab_name)
+        })
+        .unwrap_or(text);
+
     let tab_text = format!("{} {}", tab_index, text);
     let tab_right_padding = " ";
     let tab_left_padding = if tab.position == 0 {
