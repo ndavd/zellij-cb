@@ -127,7 +127,7 @@ impl UserConfiguration {
             (
                 mode,
                 Self::get_string_from_configuration(
-                    &configuration,
+                    configuration,
                     format!("{mode_string}ModeLabel").as_str(),
                     &fallback,
                 ),
@@ -144,42 +144,42 @@ impl UserConfiguration {
 
         Self {
             mode_display,
-            color_fg: Self::get_color_from_configuration(&configuration, "FgColor", white),
-            color_bg: Self::get_color_from_configuration(&configuration, "BgColor", black),
+            color_fg: Self::get_color_from_configuration(configuration, "FgColor", white),
+            color_bg: Self::get_color_from_configuration(configuration, "BgColor", black),
             color_session_directory: Self::get_color_from_configuration(
-                &configuration,
+                configuration,
                 "SessionDirectoryColor",
                 white,
             ),
             color_session_name: Self::get_color_from_configuration(
-                &configuration,
+                configuration,
                 "SessionNameColor",
                 gray,
             ),
-            color_tab: Self::get_color_from_configuration(&configuration, "TabColor", gray),
+            color_tab: Self::get_color_from_configuration(configuration, "TabColor", gray),
             color_active_tab: Self::get_color_from_configuration(
-                &configuration,
+                configuration,
                 "ActiveTabColor",
                 green,
             ),
             color_normal_mode: Self::get_color_from_configuration(
-                &configuration,
+                configuration,
                 "NormalModeColor",
                 gold,
             ),
             color_other_modes: Self::get_color_from_configuration(
-                &configuration,
+                configuration,
                 "OtherModesColor",
                 orange,
             ),
-            color_others: Self::get_color_from_configuration(&configuration, "OthersColor", orange),
+            color_others: Self::get_color_from_configuration(configuration, "OthersColor", orange),
             default_tab_name: Self::get_string_from_configuration(
-                &configuration,
+                configuration,
                 "DefaultTabName",
                 "tab",
             ),
             display_session_directory: Self::get_bool_from_configuration(
-                &configuration,
+                configuration,
                 "DisplaySessionDirectory",
                 true,
             ),
@@ -215,17 +215,15 @@ impl ZellijPlugin for State {
         match event {
             Event::RunCommandResult(_exit_code, _stdout, _stderr, _context) => {
                 if let Some(value) = _context.get("type") {
-                    match value.as_ref() {
-                        "pwd" => {
-                            self.session_directory = std::str::from_utf8(_stdout.as_slice())
-                                .unwrap()
-                                .trim()
-                                .split('/')
-                                .last()
-                                .unwrap()
-                                .to_string();
-                        }
-                        _ => {}
+                    let value: &str = value.as_ref();
+                    if value == "pwd" {
+                        self.session_directory = std::str::from_utf8(_stdout.as_slice())
+                            .unwrap()
+                            .trim()
+                            .split('/')
+                            .next_back()
+                            .unwrap()
+                            .to_string();
                     }
                 }
                 should_render = true;
