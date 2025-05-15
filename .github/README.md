@@ -18,16 +18,16 @@ Custom compact bar plugin for [Zellij](https://zellij.dev/) based on
 
 ## Releases
 
-|                           `zellij-cb`                            | Zellij             |
-| :--------------------------------------------------------------: | ------------------ |
-| [v0.1.0](https://github.com/ndavd/zellij-cb/releases/tag/v0.1.0) | Requires >= 0.42.1 |
+|                             zellij-cb                              | Zellij               |
+| :----------------------------------------------------------------: | -------------------- |
+| [`v0.1.0`](https://github.com/ndavd/zellij-cb/releases/tag/v0.1.0) | Requires >= `0.42.1` |
 
 ## Installation
 
-You can download the pre-compiled version from the
+The pre-compiled WASM file is available for download in the
 [releases page](https://github.com/ndavd/zellij-cb/releases).
 
-To build it just run `make` and you'll find the binary in
+To build it from source, run `make` and you'll find the binary in
 `target/wasm32-wasip1/release/zellij-cb.wasm`. To load it into Zellij please
 refer to their
 [plugin loading documentation](https://zellij.dev/documentation/plugin-loading).
