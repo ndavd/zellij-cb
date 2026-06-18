@@ -289,8 +289,11 @@ impl ZellijPlugin for State {
             is_alternate_tab = !is_alternate_tab;
             all_tabs.push(tab);
         }
+        let Some(session_name) = self.mode_info.session_name.clone() else {
+            return;
+        };
         self.tab_line = tab_line(
-            self.mode_info.session_name.clone().unwrap(),
+            session_name,
             all_tabs,
             active_tab_index,
             cols.saturating_sub(1),
