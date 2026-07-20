@@ -28,19 +28,23 @@ The pre-compiled WASM file is available for download in the
 [releases page](https://github.com/ndavd/zellij-cb/releases).
 
 To build it from source, run `make` and you'll find the binary in
-`target/wasm32-wasip1/release/zellij-cb.wasm`. To load it into Zellij please
-refer to their
+`target/wasm32-wasip1/release/zellij-cb.wasm`.
+
+Or using Nix (**recommended**), run `nix build` and you'll find the binary in
+`result/bin/zellij-cb.wasm`.
+
+To load it into Zellij please refer to their
 [plugin loading documentation](https://zellij.dev/documentation/plugin-loading).
 
 ## Example usage
 
 Check out my
-[dotfiles](https://github.com/ndavd/dotfiles/tree/main/.config/zellij).
+[dotfiles](https://github.com/ndavd/dotfiles/tree/edc776c250821fc4cec292083d7297d86e221772/.config/zellij).
 
 ## Available configuration
 
-- `color` type: This plugin takes its colors from the user's theme, they can
-  then be overwritten with the following syntax:
+- `color` type: This plugin takes its colors from the user's theme, they can then be overwritten
+  with the following syntax:
   - 8-bit color (single digit), e.g. `"16"`
   - RGB color (comma separated digits), e.g. `"255,255,255"`
 
